@@ -17,25 +17,26 @@ const Sidebar = () => {
         {sidebarLinks.map((link) => {
           const isActive = pathname === link.route || pathname.startsWith(`${link.route}/`);
 
-          return (
+            return (
             <Link
               href={link.route}
               key={link.label}
-              className={cn('flex gap-4 items-center p-4 rounded-lg justify-start', {
-                'bg-blue-1': isActive,
+              className={cn('flex gap-4 items-center p-4 rounded-lg justify-start duration-300 ease-in-out', {
+              'bg-blue-1': isActive,
+              'hover:bg-dark-2': !isActive,
               })}
             >
               <Image 
-                src={link.imgUrl}
-                alt={link.label}
-                width={24}
-                height={24}
+              src={link.imgUrl}
+              alt={link.label}
+              width={24}
+              height={24}
               />
               <p className='text-lg font-semibold max-lg:hidden'>
-                {link.label}
+              {link.label}
               </p>
             </Link>
-          )
+            )
         })}
       </div>
     </section>
