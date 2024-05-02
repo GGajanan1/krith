@@ -34,26 +34,28 @@ const MeetingTypeList = () => {
     if(!client || !user) return;
 
     try {
-      if(!values.dateTime) {
-        toast({
-          title: "No no no...",
-          description: "Please select a date and time and try again.",
-        })
-        return;
-      }
-      if(values.dateTime < new Date(Date.now())) {
-        toast({
-          title: "No no no...",
-          description: "Please select a future date and time.",
-        })
-        return;
-      }
-      if(!values.description) {
-        toast({
-          title: "No no no...",
-          description: "Please write a short description of the meeting.",
-        })
-        return;
+      if (meetingState === 'isScheduleMeeting') {
+        if(!values.dateTime) {
+          toast({
+            title: "No no no...",
+            description: "Please select a date and time and try again.",
+          })
+          return;
+        }
+        if(values.dateTime < new Date(Date.now())) {
+          toast({
+            title: "No no no...",
+            description: "Please select a future date and time.",
+          })
+          return;
+        }
+        if(!values.description) {
+          toast({
+            title: "No no no...",
+            description: "Please write a short description of the meeting.",
+          })
+          return;
+        }
       }
 
       const id = crypto.randomUUID();
