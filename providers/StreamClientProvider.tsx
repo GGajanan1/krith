@@ -24,7 +24,7 @@ const StreamVideoProvider = ({ children }: { children: ReactNode }) => {
       user: {
         id: user?.id,
         name: user?.username || user?.id || 'Anonymous',
-        image: user?.imageUrl || 'https://getstream.io/random_svg/?name=Anonymous',
+        image: user?.imageUrl
       },
       tokenProvider,
     })
