@@ -41,6 +41,20 @@ const MeetingTypeList = () => {
         })
         return;
       }
+      if(values.dateTime < new Date(Date.now())) {
+        toast({
+          title: "No no no...",
+          description: "Please select a future date and time.",
+        })
+        return;
+      }
+      if(!values.description) {
+        toast({
+          title: "No no no...",
+          description: "Please write a short description of the meeting.",
+        })
+        return;
+      }
 
       const id = crypto.randomUUID();
       const call = client.call('default', id);
