@@ -13,6 +13,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Textarea } from './ui/textarea';
 import ReactDatePicker from 'react-datepicker';
 import { Input } from './ui/input';
+import { track } from '@vercel/analytics';
 
 const MeetingTypeList = () => {
   const router = useRouter();
@@ -126,7 +127,9 @@ const MeetingTypeList = () => {
         title="View Recordings"
         description="Meeting Recordings"
         className="bg-yellow-1 duration-300 ease-in-out hover:opacity-65"
-        handleClick={() => router.push('/recordings')}
+        handleClick={() => {
+          track('Homecard to Recordings');
+          router.push('/recordings')}}
       />
 
       {!callDetails ? (
@@ -135,7 +138,9 @@ const MeetingTypeList = () => {
         onClose={() => setMeetingState(undefined)}
         title="Set up a scheduled meeting"
         description=''
-        handleClick={createMeeting}
+        handleClick={() => {
+          track('Schedule Meeting');
+          createMeeting}}
       >
         <div className='flex flex-col gap-2.5'>
           <label className='text-base text-normal leading-22px text-sky-2'>Description</label>
@@ -184,7 +189,9 @@ const MeetingTypeList = () => {
         description=''
         className='text-center'
         buttonText='Start Meeting'
-        handleClick={createMeeting}
+        handleClick={() => {
+          track('Start Meeting');
+          createMeeting}}
       />
 
       <MeetingModal 
@@ -194,7 +201,9 @@ const MeetingTypeList = () => {
         description="Paste the invite link, click join, and the rest is magic!"
         className='text-center'
         buttonText='Join Meeting'
-        handleClick={() => router.push(values.link)}
+        handleClick={() => {
+          track('Join Meeting');
+          router.push(values.link)}}
       >
         <Input 
         placeholder='Meeting link'
