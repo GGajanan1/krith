@@ -12,6 +12,7 @@ import { Call, useStreamVideoClient } from '@stream-io/video-react-sdk';
 import { useToast } from "@/components/ui/use-toast"
 import { Textarea } from './ui/textarea';
 import ReactDatePicker from 'react-datepicker';
+import { Input } from './ui/input';
 
 const MeetingTypeList = () => {
   const router = useRouter();
@@ -133,6 +134,7 @@ const MeetingTypeList = () => {
         isOpen={meetingState === 'isScheduleMeeting'}
         onClose={() => setMeetingState(undefined)}
         title="Set up a scheduled meeting"
+        description=''
         handleClick={createMeeting}
       >
         <div className='flex flex-col gap-2.5'>
@@ -150,11 +152,11 @@ const MeetingTypeList = () => {
               selected={values.dateTime}
               onChange={(date) => setValues({ ...values, dateTime: date! })}
               showTimeSelect
-              timeFormat="HH:mm"
+              timeFormat='HH:mm'
               timeIntervals={15}
-              timeCaption="time"
-              dateFormat="MMMM d, yyyy h:mm aa"
-              className="w-full rounded bg-dark-3 p-2 focus:outline-none text-sky-2"
+              timeCaption='time'
+              dateFormat='MMMM d, yyyy h:mm aa'
+              className='w-full rounded bg-dark-3 p-2 focus:outline-none text-sky-2'
             />
         </div>
       </MeetingModal>
@@ -162,10 +164,11 @@ const MeetingTypeList = () => {
       <MeetingModal 
         isOpen={meetingState === 'isScheduleMeeting'}
         onClose={() => setMeetingState(undefined)}
-        title="Meeting Created"
+        title='Meeting Created'
+        description=''
         handleClick={() => {
           navigator.clipboard.writeText(meetingLink);
-          toast({ title: "Link copied to clipboard" });
+          toast({ title: 'Link copied to clipboard' });
         }}
         image='/icons/checked.svg'
         buttonIcon='/icons/copy.svg'
@@ -177,11 +180,28 @@ const MeetingTypeList = () => {
       <MeetingModal 
         isOpen={meetingState === 'isInstantMeeting'}
         onClose={() => setMeetingState(undefined)}
-        title="Yoom is ready, are you?"
+        title='Yoom is ready, are you?'
+        description=''
         className='text-center'
-        buttonText="Start Meeting"
+        buttonText='Start Meeting'
         handleClick={createMeeting}
       />
+
+      <MeetingModal 
+        isOpen={meetingState === 'isJoiningMeeting'}
+        onClose={() => setMeetingState(undefined)}
+        title='Join a meeting!'
+        description="Paste the invite link, click join, and the rest is magic!"
+        className='text-center'
+        buttonText='Join Meeting'
+        handleClick={() => router.push(values.link)}
+      >
+        <Input 
+        placeholder='Meeting link'
+        className='bg-dark-3 border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sky-2' 
+        onChange = {(e) => setValues({ ...values, link: e.target.value })}
+        />
+      </MeetingModal>
     </section>
   );
 };

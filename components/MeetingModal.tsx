@@ -9,6 +9,7 @@ interface MeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  description: string;
   className?: string;
   children?: ReactNode;
   handleClick?: () => void;
@@ -23,6 +24,7 @@ const MeetingModal = ({
   isOpen,
   onClose,
   title,
+  description,
   className,
   children,
   handleClick,
@@ -44,6 +46,9 @@ const MeetingModal = ({
           <h1 className={cn("text-3xl font-bold leading-[42px]", className)}>
             {title}
           </h1>
+          <h3 className="text-sky-1 text-center">
+            {description}
+          </h3>
           {children}
           <Button
             className={
