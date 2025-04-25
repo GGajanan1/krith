@@ -241,6 +241,18 @@ const MeetingTypeList = () => {
               const id = crypto.randomUUID();
               const call = client.call('default', id);
               await call.getOrCreate({ data: { starts_at: new Date().toISOString(), cities: cityFields } });
+              const meetingUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${id}`;
+              // Store meeting in MongoDB
+              await fetch('/api/meetings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  title: 'Instant Meeting',
+                  description: 'Instant Meeting',
+                  cities: cityFields,
+                  meetingUrl
+                })
+              });
               router.push(`/meeting/${id}`);
             }}
           >Create Link & Start Meeting</Button>
