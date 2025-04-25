@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const meetingId = meetingUrl.split('/').pop(); // Extract meeting ID from the URL
+  const meetingId = meetingUrl.split('/').pop(); 
 
   const client = await clientPromise;
   const db = client.db(); // Defaults to 'krithathon' as per your URI
