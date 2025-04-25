@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 'use client';
 
 import React, { useState } from 'react';
@@ -12,6 +11,7 @@ import { Call, useStreamVideoClient } from '@stream-io/video-react-sdk';
 import { useToast } from "@/components/ui/use-toast"
 import { Textarea } from './ui/textarea';
 import ReactDatePicker from 'react-datepicker';
+import { Button } from './ui/button';
 import { Input } from "./ui/input";
 import axios from "axios";
 
@@ -32,90 +32,63 @@ const MeetingTypeList = () => {
   const [callDetails, setCallDetails] = useState<Call>()
   const { toast } = useToast()
 
-  const [cityInput, setCityInput] = useState("");
-  const [cities, setCities] = useState<string[]>([]);
+  const [numLocations, setNumLocations] = useState<number>(0);
+  const [cityFields, setCityFields] = useState<string[]>([]);
+  const [showLocationInputs, setShowLocationInputs] = useState(false);
 
-  const addCity = () => {
-    if (cityInput && !cities.includes(cityInput)) {
-      setCities([...cities, cityInput]);
-      setCityInput("");
+  const handleNumLocationsSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (numLocations > 0) {
+      setCityFields(Array(numLocations).fill(""));
+      setShowLocationInputs(true);
     }
   };
 
-  const removeCity = (city: string) => {
-    setCities(cities.filter((c) => c !== city));
+  const handleCityFieldChange = (idx: number, value: string) => {
+    setCityFields(fields => fields.map((f, i) => (i === idx ? value : f)));
   };
 
   const createMeeting = async () => {
     if(!client || !user) return;
-
     try {
       if (meetingState === 'isScheduleMeeting') {
         if(!values.dateTime) {
-          toast({
-            title: "No no no...",
-            description: "Please select a date and time and try again.",
-          })
+          toast({ title: "No no no...", description: "Please select a date and time and try again." });
           return;
         }
         if(values.dateTime < new Date(Date.now())) {
-          toast({
-            title: "No no no...",
-            description: "Please select a future date and time.",
-          })
+          toast({ title: "No no no...", description: "Please select a future date and time." });
           return;
         }
         if(!values.description) {
-          toast({
-            title: "No no no...",
-            description: "Please write a short description of the meeting.",
-          })
-          return;
-        }
-        if(!cities || cities.length === 0) {
-          toast({
-            title: "No no no...",
-            description: "Please select at least one authorized city.",
-          })
+          toast({ title: "No no no...", description: "Please write a short description of the meeting." });
           return;
         }
       }
-
-      const id = crypto.randomUUID();
-      const call = client.call('default', id);
-
-      if(!call) throw new Error('Failed to create call');
-
-      const startsAt = values.dateTime.toISOString() || new Date(Date.now()).toISOString();
-      const description = values.description || 'Connectify meeting';
-
-      await call.getOrCreate({
-        data: {
-          starts_at: startsAt,
-          custom: {
-            description,
-            cities, // Store cities in metadata
-          }
-        }
-      })
-
-      setCallDetails(call);
-
-      if(!values.description) {
-        router.push(`/meeting/${call.id}`);
+      if (!cityFields.length || cityFields.some(c => !c.trim())) {
+        toast({ title: "No no no...", description: "Please enter all authorized city names." });
+        return;
       }
-
-      toast({
-        title: "You are ready!",
-        description: "Meeting was successfully created.",
-      })
-
+      
+      const res = await fetch('/api/meetings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: values.description,
+          description: values.description,
+          cities: cityFields.map(c => c.trim()),
+        })
+      });
+      if (!res.ok) throw new Error('Failed to create meeting');
+      const data = await res.json();
+      toast({ title: "You are ready!", description: "Meeting was successfully created." });
+      setCallDetails(undefined); // or setMeetingId(data.id) if you want to show the link
+      setShowLocationInputs(false);
+      setNumLocations(0);
+      setCityFields([]);
     } catch (error) {
       console.log(error);
-      toast({
-        title: "Whoops!",
-        description: "Failed to create meeting. Please try again.",
-      })
+      toast({ title: "Whoops!", description: "Failed to create meeting. Please try again." });
     }
   }
 
@@ -177,16 +150,22 @@ const MeetingTypeList = () => {
       />
 
       {!callDetails ? (
-      <MeetingModal 
+      <MeetingModal
         isOpen={meetingState === 'isScheduleMeeting'}
-        onClose={() => setMeetingState(undefined)}
+        onClose={() => {
+          setMeetingState(undefined);
+          setShowLocationInputs(false);
+          setNumLocations(0);
+          setCityFields([]);
+        }}
         title="Set up a scheduled meeting"
-        description=''
-        handleClick={createMeeting}
+        description=""
+        handleClick={showLocationInputs ? createMeeting : undefined}
+        buttonText={showLocationInputs ? 'Create Meeting' : undefined}
       >
         <div className='flex flex-col gap-2.5'>
           <label className='text-base text-normal leading-22px text-sky-2'>Description</label>
-          <Textarea 
+          <Textarea
           className='border-none bg-dark-3 focus-visible:ring-0 focus-visible:ring-offset-0'
           onChange={(e) => {
             setValues({ ...values, description: e.target.value })
@@ -206,29 +185,32 @@ const MeetingTypeList = () => {
               className='w-full rounded bg-dark-3 p-2 focus:outline-none text-sky-2'
             />
         </div>
-        <div>
-          <label>Authorized Cities</label>
-          <div className="flex gap-2 flex-wrap mb-2">
-            {cities.map((city) => (
-              <span key={city} className="bg-blue-200 px-2 py-1 rounded">
-                {city}
-                <button onClick={() => removeCity(city)} className="ml-1 text-red-500">x</button>
-              </span>
+        {!showLocationInputs ? (
+          <form onSubmit={handleNumLocationsSubmit}>
+            <Input
+              type="number"
+              min={1}
+              value={numLocations}
+              onChange={e => setNumLocations(Number(e.target.value))}
+              placeholder="Enter number of locations"
+            />
+            <Button type="submit">Next</Button>
+          </form>
+        ) : (
+          <div>
+            {cityFields.map((city, idx) => (
+              <Input
+                key={idx}
+                placeholder={`Location ${idx + 1}`}
+                value={city}
+                onChange={e => handleCityFieldChange(idx, e.target.value)}
+              />
             ))}
           </div>
-          <div className="flex gap-2">
-            <Input
-              value={cityInput}
-              onChange={e => setCityInput(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") addCity(); }}
-              placeholder="Type city and press Enter"
-            />
-            <button type="button" onClick={addCity}>Add</button>
-          </div>
-        </div>
+        )}
       </MeetingModal>
       ) : (
-      <MeetingModal 
+      <MeetingModal
         isOpen={meetingState === 'isScheduleMeeting'}
         onClose={() => setMeetingState(undefined)}
         title='Meeting Created'
@@ -244,7 +226,7 @@ const MeetingTypeList = () => {
       />
       )}
 
-      <MeetingModal 
+      <MeetingModal
         isOpen={meetingState === 'isInstantMeeting'}
         onClose={() => setMeetingState(undefined)}
         title='Connectify is ready, are you?'
@@ -254,7 +236,7 @@ const MeetingTypeList = () => {
         handleClick={createMeeting}
       />
 
-      <MeetingModal 
+      <MeetingModal
         isOpen={meetingState === 'isJoiningMeeting'}
         onClose={() => {
           setMeetingState(undefined);
@@ -280,9 +262,9 @@ const MeetingTypeList = () => {
           </pre>
         )}
         {showInput && (
-          <Input 
+          <Input
             placeholder='Meeting link'
-            className='bg-dark-3 border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sky-2 mt-4' 
+            className='bg-dark-3 border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sky-2 mt-4'
             onChange = {(e) => setValues({ ...values, link: e.target.value })}
           />
         )}
