@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import { ReactNode } from "react";
 import { Dialog, DialogContent } from "./ui/dialog";
 import { cn } from "@/lib/utils";
@@ -9,7 +10,7 @@ interface MeetingModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  description: string;
+  description?: string;
   className?: string;
   children?: ReactNode;
   handleClick?: () => void;
@@ -29,9 +30,7 @@ const MeetingModal = ({
   children,
   handleClick,
   buttonText,
-  instantMeeting,
   image,
-  buttonClassName,
   buttonIcon,
 }: MeetingModalProps) => {
   return (
@@ -43,30 +42,33 @@ const MeetingModal = ({
               <Image src={image} alt="checked" width={72} height={72} />
             </div>
           )}
-          <h1 className={cn("text-3xl font-bold leading-[42px]", className)}>
+          <h1 className={cn("text-3xl font-bold leading-[42px] text-center", className)}>
             {title}
           </h1>
-          <h3 className="text-sky-1 text-center">
-            {description}
-          </h3>
+          {description && (
+            <h3 className="text-sky-1 text-center">
+              {description}
+            </h3>
+          )}
           {children}
-          <Button
-            className={
-              "bg-blue-1 focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-white hover:text-dark-1 duration-300 ease-in-out"
-            }
-            onClick={handleClick}
-          >
-            {buttonIcon && (
-              <Image
-                src={buttonIcon}
-                alt="button icon"
-                width={13}
-                height={13}
-              />
-            )}{" "}
-            &nbsp;
-            {buttonText || "Schedule Meeting"}
-          </Button>
+          {buttonText && handleClick && (
+            <Button
+              className={cn(
+                "bg-blue-1 focus-visible:ring-0 focus-visible:ring-offset-0 hover:bg-white hover:text-dark-1 duration-300 ease-in-out",
+              )}
+              onClick={handleClick}
+            >
+              {buttonIcon && (
+                <Image
+                  src={buttonIcon}
+                  alt="button icon"
+                  width={13}
+                  height={13}
+                />
+              )}
+              &nbsp;{buttonText}
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
