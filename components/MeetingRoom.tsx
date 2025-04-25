@@ -17,7 +17,7 @@ import Loader from './Loader'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "Meeting | Yoom",
+  title: "Meeting | Connectify",
   description: "Connect with your friends and family in a secure and private way.",
   icons: {
     icon: '/icons/logo.svg',

@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import HomeCard from './HomeCard';
@@ -12,7 +12,8 @@ import { Call, useStreamVideoClient } from '@stream-io/video-react-sdk';
 import { useToast } from "@/components/ui/use-toast"
 import { Textarea } from './ui/textarea';
 import ReactDatePicker from 'react-datepicker';
-import { Input } from './ui/input';
+import { Input } from "./ui/input";
+import axios from "axios";
 
 const MeetingTypeList = () => {
   const router = useRouter();
@@ -30,6 +31,20 @@ const MeetingTypeList = () => {
 
   const [callDetails, setCallDetails] = useState<Call>()
   const { toast } = useToast()
+
+  const [cityInput, setCityInput] = useState("");
+  const [cities, setCities] = useState<string[]>([]);
+
+  const addCity = () => {
+    if (cityInput && !cities.includes(cityInput)) {
+      setCities([...cities, cityInput]);
+      setCityInput("");
+    }
+  };
+
+  const removeCity = (city: string) => {
+    setCities(cities.filter((c) => c !== city));
+  };
 
   const createMeeting = async () => {
     if(!client || !user) return;
@@ -57,6 +72,13 @@ const MeetingTypeList = () => {
           })
           return;
         }
+        if(!cities || cities.length === 0) {
+          toast({
+            title: "No no no...",
+            description: "Please select at least one authorized city.",
+          })
+          return;
+        }
       }
 
       const id = crypto.randomUUID();
@@ -65,13 +87,14 @@ const MeetingTypeList = () => {
       if(!call) throw new Error('Failed to create call');
 
       const startsAt = values.dateTime.toISOString() || new Date(Date.now()).toISOString();
-      const description = values.description || 'Yoom meeting';
+      const description = values.description || 'Connectify meeting';
 
       await call.getOrCreate({
         data: {
           starts_at: startsAt,
           custom: {
-            description
+            description,
+            cities, // Store cities in metadata
           }
         }
       })
@@ -97,6 +120,30 @@ const MeetingTypeList = () => {
   }
 
   const meetingLink = `${process.env.NEXT_PUBLIC_BASE_URL}/meeting/${callDetails?.id}`
+
+  const [joinMeetingData, setJoinMeetingData] = useState<any>(null);
+  const [joinMeetingLoading, setJoinMeetingLoading] = useState(false);
+  const [joinMeetingError, setJoinMeetingError] = useState<string | null>(null);
+  const [showInput, setShowInput] = useState(false);
+
+  const handleJoinMeeting = async () => {
+    setJoinMeetingLoading(true);
+    setJoinMeetingError(null);
+    setJoinMeetingData(null);
+    setShowInput(false);
+    try {
+      const res = await fetch('https://mani.pythonanywhere.com/');
+      if (!res.ok) throw new Error('Network response was not ok');
+      const data = await res.json();
+      setJoinMeetingData(data);
+      console.log('Fetched data:', data);
+      setShowInput(true);
+    } catch (e) {
+      setJoinMeetingError('Unknown error');
+    } finally {
+      setJoinMeetingLoading(false);
+    }
+  };
 
   return (
     <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4 max-w-[1300px]">
@@ -159,6 +206,26 @@ const MeetingTypeList = () => {
               className='w-full rounded bg-dark-3 p-2 focus:outline-none text-sky-2'
             />
         </div>
+        <div>
+          <label>Authorized Cities</label>
+          <div className="flex gap-2 flex-wrap mb-2">
+            {cities.map((city) => (
+              <span key={city} className="bg-blue-200 px-2 py-1 rounded">
+                {city}
+                <button onClick={() => removeCity(city)} className="ml-1 text-red-500">x</button>
+              </span>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <Input
+              value={cityInput}
+              onChange={e => setCityInput(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") addCity(); }}
+              placeholder="Type city and press Enter"
+            />
+            <button type="button" onClick={addCity}>Add</button>
+          </div>
+        </div>
       </MeetingModal>
       ) : (
       <MeetingModal 
@@ -180,7 +247,7 @@ const MeetingTypeList = () => {
       <MeetingModal 
         isOpen={meetingState === 'isInstantMeeting'}
         onClose={() => setMeetingState(undefined)}
-        title='Yoom is ready, are you?'
+        title='Connectify is ready, are you?'
         description=''
         className='text-center'
         buttonText='Start Meeting'
@@ -189,18 +256,36 @@ const MeetingTypeList = () => {
 
       <MeetingModal 
         isOpen={meetingState === 'isJoiningMeeting'}
-        onClose={() => setMeetingState(undefined)}
+        onClose={() => {
+          setMeetingState(undefined);
+          setJoinMeetingData(null);
+          setJoinMeetingError(null);
+          setShowInput(false);
+        }}
         title='Join a meeting!'
         description="Paste the invite link, click join, and the rest is magic!"
         className='text-center'
         buttonText='Join Meeting'
-        handleClick={() => router.push(values.link)}
+        handleClick={handleJoinMeeting}
       >
-        <Input 
-        placeholder='Meeting link'
-        className='bg-dark-3 border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sky-2' 
-        onChange = {(e) => setValues({ ...values, link: e.target.value })}
-        />
+        {joinMeetingLoading && (
+          <div className="mt-4 text-sky-2">Loading data...</div>
+        )}
+        {joinMeetingError && (
+          <div className="mt-4 text-red-500">Error: {joinMeetingError}</div>
+        )}
+        {joinMeetingData && (
+          <pre className="mt-4 bg-dark-3 p-2 rounded text-left max-h-60 overflow-auto text-xs">
+            {JSON.stringify(joinMeetingData, null, 2)}
+          </pre>
+        )}
+        {showInput && (
+          <Input 
+            placeholder='Meeting link'
+            className='bg-dark-3 border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-sky-2 mt-4' 
+            onChange = {(e) => setValues({ ...values, link: e.target.value })}
+          />
+        )}
       </MeetingModal>
     </section>
   );

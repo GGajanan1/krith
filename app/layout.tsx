@@ -14,7 +14,7 @@ import { Analytics } from '@vercel/analytics/react';
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Yoom",
+  title: "Connectify",
   description: "Connect with your friends and family in a secure and private way.",
   icons: {
     icon: '/icons/logo.svg',
@@ -32,7 +32,7 @@ export default function RootLayout({
         
         appearance={{
           layout: {
-            logoImageUrl: '/icons/yoom-logo.svg',
+            logoImageUrl: '/icons/Connectify-logo.svg',
             socialButtonsVariant: 'iconButton',
           },
 

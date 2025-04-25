@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import React, { ReactNode } from 'react'
 
 export const metadata: Metadata = {
-  title: "Yoom",
+  title: "Connectify",
   description: "Connect with your friends and family in a secure and private way.",
   icons: {
     icon: '/icons/logo.svg',

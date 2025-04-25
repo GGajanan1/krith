@@ -5,7 +5,7 @@ import Sidebar from '@/components/Sidebar'
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Yoom",
+  title: "Connectify",
   description: "Connect with your friends and family in a secure and private way.",
   icons: {
     icon: '/icons/logo.svg',

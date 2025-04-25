@@ -1,6 +1,6 @@
-# YOOM - A Zoom-inspired web application.
-### [Try it out!](https://yoom-liart-delta.vercel.app/)
-![Yoom Home Page](https://i.ibb.co/n31RGjt/yoom-homepage.png)
+# Connectify - A Zoom-inspired web application.
+### [Try it out!](https://Connectify-liart-delta.vercel.app/)
+![Connectify Home Page](https://i.ibb.co/n31RGjt/Connectify-homepage.png)
 
 # Technology used
 ### [Next.js](https://nextjs.org/)
@@ -12,8 +12,8 @@
 
 # Screenshots
 ## In call
-![Active Call on Yoom](https://i.ibb.co/bRLd3Vg/yoom-incall.png)
+![Active Call on Connectify](https://i.ibb.co/bRLd3Vg/Connectify-incall.png)
 ## Sign in
-![Yoom Sign-In Form](https://i.ibb.co/kcsYJMj/yoom-signin.png)
+![Connectify Sign-In Form](https://i.ibb.co/kcsYJMj/Connectify-signin.png)
 ## Homepage for mobile devices
-![Yoom Home Page Mobile View](https://i.ibb.co/t4zngfs/yoom-homepage-mobile.png)
+![Connectify Home Page Mobile View](https://i.ibb.co/t4zngfs/Connectify-homepage-mobile.png)
