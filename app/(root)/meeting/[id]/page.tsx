@@ -20,6 +20,7 @@ const Meeting = ({ params: { id } }: { params: { id: string } }) => {
   const [userCity, setUserCity] = useState<string>("");
   const [notAuthorized, setNotAuthorized] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [showModal, setShowModal] = useState(true);
   const [otp, setOtp] = useState("");
   const [enteredOtp, setEnteredOtp] = useState("");
   const [requestInfo, setRequestInfo] = useState({ name: "", empid: "", desg: "", email: "" });
@@ -72,41 +73,47 @@ const Meeting = ({ params: { id } }: { params: { id: string } }) => {
       alert("Incorrect OTP.");
       return;
     }
-
-    await axios.post("/api/meeting-requests", {
-      meetingId: id,
-      ...requestInfo,
-      city: userCity,
-    });
-
-    alert("Request submitted.");
+  
+    try {
+      await axios.post("/api/meeting-requests", {
+        meetingId: id,
+        ...requestInfo,
+        city: userCity,
+      });
+  
+      setShowModal(false); 
+      router.push(`/meeting/${id}`); 
+    } catch (error) {
+      console.error("Request submission error:", error);
+      alert("Failed to submit request.");
+    }
   };
+  
+  
 
   if (!isLoaded || isCallLoading) return <Loader />;
 
-  if (notAuthorized) {
-    return (
-      <MeetingModal
-        isOpen={true}
-        onClose={() => {}}
-        title="Not Authorized"
-        description="You are not authorized to join. Request access below."
-        buttonText={otpSent ? "Submit Request" : "Send OTP"}
-        handleClick={otpSent ? handleRequestAccess : generateAndSendOtp}
-      >
-        <Input placeholder="Name" value={requestInfo.name} onChange={e => setRequestInfo({ ...requestInfo, name: e.target.value })} />
-        <Input placeholder="EmpID" value={requestInfo.empid} onChange={e => setRequestInfo({ ...requestInfo, empid: e.target.value })} />
-        <Input placeholder="Designation" value={requestInfo.desg} onChange={e => setRequestInfo({ ...requestInfo, desg: e.target.value })} />
-        <Input placeholder="Email" value={requestInfo.email} onChange={e => setRequestInfo({ ...requestInfo, email: e.target.value })} />
-        {otpSent && (
-          <Input placeholder="Enter OTP" value={enteredOtp} onChange={e => setEnteredOtp(e.target.value)} />
-        )}
-      </MeetingModal>
-    );
-  }
-
+  {notAuthorized && showModal && (
+    <MeetingModal
+      isOpen={true}
+      onClose={() => setShowModal(false)}
+      title="Not Authorized"
+      description="You are not authorized to join. Request access below."
+      buttonText={otpSent ? "Submit Request" : "Send OTP"}
+      handleClick={otpSent ? handleRequestAccess : generateAndSendOtp}
+    >
+      <Input className='text-black' placeholder="Name" value={requestInfo.name} onChange={e => setRequestInfo({ ...requestInfo, name: e.target.value })} />
+      <Input className='text-black' placeholder="EmpID" value={requestInfo.empid} onChange={e => setRequestInfo({ ...requestInfo, empid: e.target.value })} />
+      <Input className='text-black' placeholder="Designation" value={requestInfo.desg} onChange={e => setRequestInfo({ ...requestInfo, desg: e.target.value })} />
+      <Input className='text-black' placeholder="Email" value={requestInfo.email} onChange={e => setRequestInfo({ ...requestInfo, email: e.target.value })} />
+      {otpSent && (
+        <Input className='text-black' placeholder="Enter OTP" value={enteredOtp} onChange={e => setEnteredOtp(e.target.value)} />
+      )}
+    </MeetingModal>
+  )}
+  
   return (
-    <main className='h-screen w-full'>
+    <main className='h-screen w-full text-black'>
       <StreamCall call={call}>
         <StreamTheme>
           {!isSetupComplete ? (
