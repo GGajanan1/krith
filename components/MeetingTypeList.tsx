@@ -277,9 +277,10 @@ const MeetingTypeList = () => {
         {joinMeetingLoading && <p className="text-sky-2">Loading...</p>}
         {joinMeetingError && <p className="text-red-500">{joinMeetingError}</p>}
         {joinMeetingData && (
-          <pre className="bg-dark-3 p-2 rounded text-left text-xs max-h-60 overflow-auto">
-            {JSON.stringify(joinMeetingData, null, 2)}
-          </pre>
+          // <pre className="bg-dark-3 p-2 rounded text-left text-xs max-h-60 overflow-auto">
+          //   {JSON.stringify(joinMeetingData, null, 2)}
+          // </pre>
+          <h2 className='flex items-center justify-center'>Just a step away from joining the meet!</h2>
         )}
         {showInput && (
           <Input

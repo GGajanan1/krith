@@ -19,19 +19,19 @@ const Meeting = ({ params: { id } }: { params: { id: string } }) => {
   const [meeting, setMeeting] = useState<any>(null);
   const [userCity, setUserCity] = useState<string>("");
   const [notAuthorized, setNotAuthorized] = useState(false);
-  const [requestInfo, setRequestInfo] = useState({ name: "", empid: "", desg: "" });
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [enteredOtp, setEnteredOtp] = useState("");
+  const [requestInfo, setRequestInfo] = useState({ name: "", empid: "", desg: "", email: "" });
   const [vpnStatus, setVpnStatus] = useState<string>("");
 
   useEffect(() => {
-    // Fetch meeting details
     axios.get(`/api/meetings?meetingId=${id}`).then(res => setMeeting(res.data));
-    console.log("Meeting details fetched:", meeting);
-    // Get user city and VPN status
     fetch("https://mani.pythonanywhere.com/")
       .then(res => res.json())
       .then(data => {
         setUserCity(data.city);
-        setVpnStatus(data.vpn=== "yes" ? "yes" : "no");
+        setVpnStatus(data.vpn === "yes" ? "yes" : "no");
       });
   }, [id]);
 
@@ -43,23 +43,46 @@ const Meeting = ({ params: { id } }: { params: { id: string } }) => {
     }
     if (meeting && userCity) {
       if (!meeting.cities.includes(userCity)) setNotAuthorized(true);
-      else if (meeting.cities.includes(userCity)) {
+      else {
         setNotAuthorized(false);
-        setTimeout(() => router.push(`/meeting/${id}`), 500); // redirect to meet
+        setTimeout(() => router.push(`/meeting/${id}`), 500);
       }
     }
   }, [meeting, userCity, vpnStatus]);
 
-  const handleRequest = async () => {
+  const generateAndSendOtp = async () => {
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    setOtp(otpCode);
+
+    try {
+      await axios.post("/api/send-otp", {
+        email: requestInfo.email,
+        otp: otpCode,
+      });
+      setOtpSent(true);
+      alert("OTP sent to your email.");
+    } catch (error) {
+      console.error("OTP error:", error);
+      alert("Failed to send OTP.");
+    }
+  };
+
+  const handleRequestAccess = async () => {
+    if (enteredOtp !== otp) {
+      alert("Incorrect OTP.");
+      return;
+    }
+
     await axios.post("/api/meeting-requests", {
       meetingId: id,
       ...requestInfo,
       city: userCity,
     });
-    // Show confirmation, etc.
+
+    alert("Request submitted.");
   };
 
-  if(!isLoaded || isCallLoading) return <Loader />;
+  if (!isLoaded || isCallLoading) return <Loader />;
 
   if (notAuthorized) {
     return (
@@ -68,12 +91,16 @@ const Meeting = ({ params: { id } }: { params: { id: string } }) => {
         onClose={() => {}}
         title="Not Authorized"
         description="You are not authorized to join. Request access below."
-        buttonText="Request Access"
-        handleClick={handleRequest}
+        buttonText={otpSent ? "Submit Request" : "Send OTP"}
+        handleClick={otpSent ? handleRequestAccess : generateAndSendOtp}
       >
         <Input placeholder="Name" value={requestInfo.name} onChange={e => setRequestInfo({ ...requestInfo, name: e.target.value })} />
         <Input placeholder="EmpID" value={requestInfo.empid} onChange={e => setRequestInfo({ ...requestInfo, empid: e.target.value })} />
         <Input placeholder="Designation" value={requestInfo.desg} onChange={e => setRequestInfo({ ...requestInfo, desg: e.target.value })} />
+        <Input placeholder="Email" value={requestInfo.email} onChange={e => setRequestInfo({ ...requestInfo, email: e.target.value })} />
+        {otpSent && (
+          <Input placeholder="Enter OTP" value={enteredOtp} onChange={e => setEnteredOtp(e.target.value)} />
+        )}
       </MeetingModal>
     );
   }
@@ -82,15 +109,15 @@ const Meeting = ({ params: { id } }: { params: { id: string } }) => {
     <main className='h-screen w-full'>
       <StreamCall call={call}>
         <StreamTheme>
-          { !isSetupComplete ? (
+          {!isSetupComplete ? (
             <MeetingSetup setIsSetupComplete={setIsSetupComplete} />
-          ): (
+          ) : (
             <MeetingRoom />
           )}
         </StreamTheme>
       </StreamCall>
     </main>
-  )
-}
+  );
+};
 
 export default Meeting;
