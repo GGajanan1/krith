@@ -29,15 +29,20 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
   const meetingId = req.nextUrl.searchParams.get('meetingId');
   if (!meetingId) {
-    return NextResponse.json({ error: 'Missing meetingId' }, { status: 400 });
+    return NextResponse.json({ error: 'Missing meetingId or meetingUrl' }, { status: 400 });
   }
   const client = await clientPromise;
   const db = client.db();
-  const meeting = await db.collection('meetings').findOne({ meetingId });
+  let meeting = null;
+  if (meetingId) {
+    meeting = await db.collection('meetings').findOne({ meetingId });
+    console.log('Result by meetingId:', meeting);
+  }
   if (!meeting) {
+    console.log('Meeting not found');
     return NextResponse.json({ error: 'Meeting not found' }, { status: 404 });
   }
-  // Remove MongoDB _id from response for cleaner output
   const { _id, ...meetingData } = meeting;
+  console.log('Meeting found:', meetingData);
   return NextResponse.json(meetingData);
 }
